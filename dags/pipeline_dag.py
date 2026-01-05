@@ -156,7 +156,7 @@ dbt_test = BashOperator(
     bash_command=f'cd {DBT_PROJECT_PATH} && dbt test --profiles-dir {DBT_PROJECT_PATH}',
     dag=dag
 )
-
+#comment 
 start_task >> check_file_task
 check_file_task >> upload_to_s3_task >> load_to_snowflake_task
 check_file_task >> skip_upload >> load_to_snowflake_task
