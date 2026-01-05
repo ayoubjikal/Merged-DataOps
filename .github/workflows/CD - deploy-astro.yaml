@@ -1,0 +1,25 @@
+name: CD - Deploy Airflow to Astronomer
+
+on:
+  push:
+    branches:
+      - master  # Only triggers on merge/push to master
+
+jobs:
+  deploy:
+    name: Deploy to Astronomer Cloud
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Astro CLI
+        run: |
+          curl -sSL https://install.astronomer.io | sudo bash
+
+      - name: Deploy to Astronomer
+        run: |
+          astro deploy "${{ secrets.ASTRO_DEPLOYMENT_ID }}" --force
+        env:
+          ASTRO_API_TOKEN: "${{ secrets.ASTRO_DEPLOYMENT_TOKEN }}"

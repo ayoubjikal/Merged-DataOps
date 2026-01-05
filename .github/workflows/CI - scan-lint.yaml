@@ -1,0 +1,104 @@
+  name: CI Pipeline
+
+  on:
+    push:
+      branches:
+        - "**" # Trigger on every push to any branch
+    pull_request:
+      branches: [master]
+
+  jobs:
+    lint-and-test:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v3
+
+        - name: Set up Python
+          uses: actions/setup-python@v4
+          with:
+            python-version: "3.10"
+
+        - name: Install dependencies
+          run: pip install -r requirements.txt
+
+        # Lint Python code
+        - name: Run Ruff/Flake8
+          run: |
+            pip install ruff
+            ruff check dags/ include/
+
+    #     # Validate DAGs
+    #     - name: Test DAG Integrity
+    #       run: python -m pytest .astro/test_dag_integrity_default.py
+
+    #     # dbt compile & test
+    #     - name: dbt Compile
+    #       working-directory: include/dbt
+    #       run: |
+    #         pip install dbt-snowflake
+    #         dbt compile --profiles-dir .
+
+    #     # Terraform validate
+    #     - name: Terraform Validate
+    #       working-directory: include/terraform
+    #       run: |
+    #         terraform init -backend=false
+    #         terraform validate
+    #         terraform fmt -check
+
+    trivy-scan:
+      name: Run Trivy Security Scans
+      runs-on: ubuntu-latest
+
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v3
+
+        ##########################################################
+        # 1. FILESYSTEM SCAN (detect secrets, API keys, etc.)
+        ##########################################################
+        - name: Trivy FS Scan (Secrets & Vulnerabilities)
+          uses: aquasecurity/trivy-action@master
+          with:
+            scan-type: fs
+            ignore-unfixed: true
+            severity: HIGH,CRITICAL
+            output: trivy-fs-report.txt
+
+        ##########################################################
+        # 2. DEPENDENCY SCAN (Python + Requirements.txt)
+        ##########################################################
+        - name: Trivy Python Dependency Scan
+          uses: aquasecurity/trivy-action@master
+          with:
+            scan-type: repo
+            ignore-unfixed: true
+            severity: HIGH,CRITICAL
+            output: trivy-deps-report.txt
+
+        ##########################################################
+        # 3. TERRAFORM IaC SECURITY SCAN
+        ##########################################################
+        - name: Trivy IaC Scan (Terraform)
+          uses: aquasecurity/trivy-action@master
+          with:
+            scan-type: config
+            path: ./include/terraform
+            severity: HIGH,CRITICAL
+            output: trivy-iac-report.txt
+
+        ##########################################################
+        # 4. CONTAINER IMAGE SCAN (after building your Airflow image)
+        ##########################################################
+
+        ##########################################################
+        # 5. UPLOAD RESULTS AS GITHUB ARTIFACTS
+        ##########################################################
+        - name: Upload Trivy Scan Reports
+          uses: actions/upload-artifact@v4
+          with:
+            name: trivy-security-reports
+            path: |
+              trivy-fs-report.txt
+              trivy-deps-report.txt
+              trivy-iac-report.txt

@@ -1,0 +1,13 @@
+ecomdataops:
+  outputs:
+    dev:
+      account: DBUNHUC-RF20070
+      database: ecommerce_db
+      password: ayoub@airflow
+      role: ACCOUNTADMIN
+      schema: raw
+      threads: 4
+      type: snowflake
+      user: ayoub_airflow
+      warehouse: ecommerce_wh
+  target: dev

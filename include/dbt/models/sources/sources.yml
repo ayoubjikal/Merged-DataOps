@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+- name: raw_data
+  database: ECOMMERCE_DB
+  schema: raw
+  tables:
+  - name: ecommerce_table
