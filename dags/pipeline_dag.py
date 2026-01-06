@@ -93,7 +93,7 @@ check_file_task = BranchPythonOperator(
 skip_upload = EmptyOperator(task_id='skip_upload', dag=dag)
 
 # Simpler template approach for upload
-upload_to_s3_task = LocalFilesystemToS3Operator(
+upload_to_s3_task = LocalFilesystemToS3Operator(    
     task_id='upload_to_s3',
     filename="/usr/local/airflow/include/data/transactions_{{ ds }}.csv",
     # use ds (YYYY-MM-DD) to build partition parts — execution_date isn't available in this template context
@@ -114,7 +114,7 @@ load_to_snowflake_task = SnowflakeOperator(
         USE DATABASE ecommerce_db;
         USE SCHEMA RAW;
 
-        COPY INTO ecommerce_table (
+        COPY INTO ECOMMERCE_TABLE (
             InvoiceNo,
             StockCode,
             Description,
