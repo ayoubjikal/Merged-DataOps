@@ -5,7 +5,7 @@
       branches:
         - "**" # Trigger on every push to any branch
     pull_request:
-      branches: [master]
+      branches: [main]
 
   jobs:
     lint-and-test:
